@@ -30,5 +30,10 @@
        (apply +)))
 
 (deftest day01
+  (is (= (module-fuel 12) 2))
+  (is (= (module-fuel 100756) 33583))
   (is (= (modules-fuel modules) 3210097))
+  (is (= (fuel-fuel (module-fuel 14)) 2))
+  (is (= (fuel-fuel (module-fuel 1969)) 966))
+  (is (= (fuel-fuel (module-fuel 100756)) 50346))
   (is (= (modules-fuel-with-fuel modules) 4812287)))
