@@ -1,29 +1,34 @@
 (ns adventofcode2019.day01
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.test :refer [deftest is]]))
 
 (def input (slurp "resources/day01.txt"))
 
-(def module-masses
+(def modules
   (->> (str/split-lines input)
        (map #(Long/parseLong %))))
 
-(defn fuel-required [m] (max 0 (- (quot m 3) 2)))
+(defn module-fuel [m] (max 0 (- (quot m 3) 2)))
 
-(def initial-fuel-requirement
-  (->> module-masses
-       (map fuel-required)
+(defn modules-fuel
+  [modules]
+  (->> modules
+       (map module-fuel)
        (apply +)))
 
-(defn fuel-required-with-fuel
+(defn fuel-fuel
   [fuel]
-  (->> (iterate fuel-required fuel)
+  (->> (iterate module-fuel fuel)
        (take-while pos?)
        (apply +)))
 
-(def extra-fuel-requirement
-  (->> module-masses
-       (map fuel-required)
-       (map fuel-required-with-fuel)
+(defn modules-fuel-with-fuel
+  [modules]
+  (->> modules
+       (map module-fuel)
+       (map fuel-fuel)
        (apply +)))
 
-[initial-fuel-requirement extra-fuel-requirement]
+(deftest day01
+  (is (= (modules-fuel modules) 3210097))
+  (is (= (modules-fuel-with-fuel modules) 4812287)))

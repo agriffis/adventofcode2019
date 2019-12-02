@@ -46,8 +46,8 @@
 (def sample-program (parse-program "1,9,10,3,2,3,11,0,99,30,40,50"))
 
 (deftest day02
-  (is (run-op 0 sample-program)
-      [4 (parse-program "1,9,10,70,2,3,11,0,99,30,40,50")])
-  (is (run-program sample-program) 30)
-  (is (first-half) 5305097)
-  (is (second-half) 4925))
+  (is (= (run-op 0 sample-program)
+         [4 (parse-program "1,9,10,70,2,3,11,0,99,30,40,50")]))
+  (is (= (run-program sample-program) 3500))
+  (is (= (first-half) 5305097))
+  (is (= (second-half) 4925)))
