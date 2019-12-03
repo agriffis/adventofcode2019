@@ -26,6 +26,7 @@
 (def input (wires (slurp "resources/day03.txt")))
 
 (defn segments
+  "Convert a wire (points) to a sequence of segments [[x1 y1] [x2 y2]]."
   [wire]
   (map vector wire (rest wire)))
 
@@ -38,6 +39,8 @@
   (apply = (map second segment)))
 
 (defn intersection
+  "If there is an intersection between two segments, return the intersection
+  point."
   [horiz vert]
   (cond (and (horiz? horiz) (vert? vert))
           (let [[x1 x2] (map first horiz)
@@ -54,6 +57,7 @@
   (->> point (map #(Math/abs %)) (apply +)))
 
 (defn combinations
+  "[a b c] => [[a b] [a c] [b c]]"
   [items]
   (for [subitems (drop-last (take-while seq (iterate rest items)))
         :let [i (first subitems)]
@@ -98,33 +102,26 @@
            [{} 0]
            segments)))
 
-(defn dbg
-  [x y]
-  ;(println x y)
-  y)
-
 (defn intersection-steps
   "Combined steps for each intersecting point between two wires."
   ([wires]
    (->> wires
         (map segments)
         (map #(vector % (steps %)))
-        (dbg "segments and steps")
         combinations
         (mapcat (partial apply intersection-steps))))
   ([[segments1 steps1] [segments2 steps2]]
    (for [sub-segments1 (rest (reductions conj [] segments1))
          sub-segments2 (rest (reductions conj [] segments2))
-         :when (or (> (count (dbg "sub-segments1" sub-segments1)) 1)
-                   (> (count (dbg "sub-segments2" sub-segments2)) 1))
+         :when (or (seq (rest sub-segments1)) (seq (rest sub-segments2)))
          :let [s1 (peek sub-segments1)
                s2 (peek sub-segments2)
                i (intersection s1 s2)]
-         :when (dbg "i" i)]
-     (+ (dbg "steps1" (steps1 (second (peek (pop sub-segments1)))))
-        (dbg "last1" (segment-steps [(first s1) i]))
-        (dbg "steps2" (steps2 (second (peek (pop sub-segments2)))))
-        (dbg "last2" (segment-steps [(first s2) i]))))))
+         :when i]
+     (+ (steps1 (second (peek (pop sub-segments1))))
+        (segment-steps [(first s1) i])
+        (steps2 (second (peek (pop sub-segments2))))
+        (segment-steps [(first s2) i])))))
 
 (defn second-half
   [input]
