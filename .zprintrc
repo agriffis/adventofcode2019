@@ -1,0 +1,9 @@
+{:fn-force-nl #{:binding}
+ :fn-map {"->>" :none-body
+          "defn" :arg1-force-nl
+          "some->" :noarg1-body
+          "some->>" :none-body
+          "try" :flow-body
+          "when-let*" :binding}
+ :map {:comma? false}
+ :remove {:fn-force-nl #{:noarg1 :noarg1-body}}}
