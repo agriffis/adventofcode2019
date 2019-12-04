@@ -3,7 +3,7 @@
             [clojure.test :refer [deftest is]]))
 
 ;;; ----------------------------------------------------------------------
-;;; First half
+;;; Part one
 ;;; ----------------------------------------------------------------------
 
 (defn parse-program
@@ -33,7 +33,7 @@
   [program noun verb]
   (run-program (-> program (assoc 1 noun) (assoc 2 verb))))
 
-(defn first-half
+(defn part-one
   [program]
   (try-program program 12 2))
 
@@ -46,17 +46,17 @@
 
 (def program (parse-program (slurp "resources/day02.txt")))
 
-(first-half program)
+(part-one program)
 
 ;;; ----------------------------------------------------------------------
-;;; Second half
+;;; Part two
 ;;; ----------------------------------------------------------------------
 
-(defn second-half
+(defn part-two
   [program]
   (first (for [noun (range 100)
                verb (range 100)
                :when (= 19690720 (try-program program noun verb))]
            (+ (* 100 noun) verb))))
 
-(second-half program)
+(part-two program)

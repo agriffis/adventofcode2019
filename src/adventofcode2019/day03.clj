@@ -3,7 +3,7 @@
             [clojure.test :refer [deftest is]]))
 
 ;;; ----------------------------------------------------------------------
-;;; First half
+;;; Part one
 ;;; ----------------------------------------------------------------------
 
 (defn turtle
@@ -74,7 +74,7 @@
   [wires]
   (first (sort-by manhattan (intersections wires))))
 
-(defn first-half
+(defn part-one
   [input]
   (manhattan (closest-intersection input)))
 
@@ -93,16 +93,16 @@
          '([[0 0] [8 0] [8 5] [3 5] [3 2]] [[0 0] [0 7] [6 7] [6 3] [2 3]])))
   (is (= (segments (first sample1))
          '([[0 0] [8 0]] [[8 0] [8 5]] [[8 5] [3 5]] [[3 5] [3 2]])))
-  (is (= (first-half sample1) 6))
-  (is (= (first-half sample2) 159))
-  (is (= (first-half sample3) 135)))
+  (is (= (part-one sample1) 6))
+  (is (= (part-one sample2) 159))
+  (is (= (part-one sample3) 135)))
 
 (def input (wires (slurp "resources/day03.txt")))
 
-(first-half input)
+(part-one input)
 
 ;;; ----------------------------------------------------------------------
-;;; Second half
+;;; Part two
 ;;; ----------------------------------------------------------------------
 
 (defn segment-steps
@@ -139,14 +139,14 @@
          (segment-steps [(first s1) i])
          (segment-steps [(first s2) i])))))
 
-(defn second-half
+(defn part-two
   [input]
   (first (sort (intersection-steps input))))
 
 (deftest day03-second
   (is (= (intersection-steps sample1) '(30 40)))
-  (is (= (second-half sample1) 30))
-  (is (= (second-half sample2) 610))
-  (is (= (second-half sample3) 410)))
+  (is (= (part-two sample1) 30))
+  (is (= (part-two sample2) 610))
+  (is (= (part-two sample3) 410)))
 
-(second-half input)
+(part-two input)
