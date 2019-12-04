@@ -2,6 +2,10 @@
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is]]))
 
+;;; ----------------------------------------------------------------------
+;;; First half
+;;; ----------------------------------------------------------------------
+
 (defn turtle
   "Given an instruction (D10) and current point, return the next point."
   [s [x y]]
@@ -22,8 +26,6 @@
 (defn wires
   [input]
   (map wire (str/split-lines input)))
-
-(def input (wires (slurp "resources/day03.txt")))
 
 (defn segments
   "Convert a wire (points) to a sequence of segments [[x1 y1] [x2 y2]]."
@@ -56,27 +58,17 @@
   [point]
   (->> point (map #(Math/abs %)) (apply +)))
 
-(defn combinations
-  "[a b c] => [[a b] [a c] [b c]]"
-  [items]
-  (for [subitems (drop-last (take-while seq (iterate rest items)))
-        :let [i (first subitems)]
-        j (rest subitems)]
-    [i j]))
-
 (defn intersections
   "Intersecting points between two wires."
-  ([wires]
-   (->> wires
-        (map segments)
-        combinations
-        (mapcat (partial apply intersections))))
-  ([segments1 segments2]
-   (->> (for [s1 segments1
-              s2 segments2]
-          (intersection s1 s2))
-        rest ; [0, 0]
-        (remove nil?))))
+  [wires]
+  (let [segs (map segments wires)]
+    (->> (for [s1 (first segs)
+               s2 (second segs)
+               :let [i (intersection s1 s2)]
+               :when i]
+           i)
+         rest ; remove [0, 0]
+      )))
 
 (defn closest-intersection
   [wires]
@@ -85,6 +77,33 @@
 (defn first-half
   [input]
   (manhattan (closest-intersection input)))
+
+(def sample1 (wires "R8,U5,L5,D3\nU7,R6,D4,L4\n"))
+
+(def sample2
+  (wires (str "R75,D30,R83,U83,L12,D49,R71,U7,L72\n"
+              "U62,R66,U55,R34,D71,R55,D58,R83\n")))
+
+(def sample3
+  (wires (str "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\n"
+              "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7\n")))
+
+(deftest day03-first
+  (is (= sample1
+         '([[0 0] [8 0] [8 5] [3 5] [3 2]] [[0 0] [0 7] [6 7] [6 3] [2 3]])))
+  (is (= (segments (first sample1))
+         '([[0 0] [8 0]] [[8 0] [8 5]] [[8 5] [3 5]] [[3 5] [3 2]])))
+  (is (= (first-half sample1) 6))
+  (is (= (first-half sample2) 159))
+  (is (= (first-half sample3) 135)))
+
+(def input (wires (slurp "resources/day03.txt")))
+
+(first-half input)
+
+;;; ----------------------------------------------------------------------
+;;; Second half
+;;; ----------------------------------------------------------------------
 
 (defn segment-steps
   "How many steps in a segment?"
@@ -103,52 +122,31 @@
            segments)))
 
 (defn intersection-steps
-  "Combined steps for each intersecting point between two wires."
-  ([wires]
-   (->> wires
-        (map segments)
-        (map #(vector % (steps %)))
-        combinations
-        (mapcat (partial apply intersection-steps))))
-  ([[segments1 steps1] [segments2 steps2]]
-   (for [sub-segments1 (rest (reductions conj [] segments1))
-         sub-segments2 (rest (reductions conj [] segments2))
-         :when (or (seq (rest sub-segments1)) (seq (rest sub-segments2)))
-         :let [s1 (peek sub-segments1)
-               s2 (peek sub-segments2)
-               i (intersection s1 s2)]
-         :when i]
-     (+ (steps1 (second (peek (pop sub-segments1))))
-        (segment-steps [(first s1) i])
-        (steps2 (second (peek (pop sub-segments2))))
-        (segment-steps [(first s2) i])))))
+  "Combined steps for each intersection between two wires."
+  [wires]
+  (let [segs (map segments wires)
+        steps (map steps segs)
+        subsegs (map #(rest (reductions conj [] %)) segs)]
+    (for [segs1 (first subsegs)
+          segs2 (second subsegs)
+          :when (some #(seq (rest %)) [segs1 segs2])
+          :let [s1 (peek segs1)
+                s2 (peek segs2)
+                i (intersection s1 s2)]
+          :when i]
+      (+ (-> segs1 pop peek second ((first steps)))
+         (-> segs2 pop peek second ((second steps)))
+         (segment-steps [(first s1) i])
+         (segment-steps [(first s2) i])))))
 
 (defn second-half
   [input]
   (first (sort (intersection-steps input))))
 
-(def sample1 (wires "R8,U5,L5,D3\nU7,R6,D4,L4\n"))
-
-(def sample2
-  (wires (str "R75,D30,R83,U83,L12,D49,R71,U7,L72\n"
-              "U62,R66,U55,R34,D71,R55,D58,R83\n")))
-
-(def sample3
-  (wires (str "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\n"
-              "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7\n")))
-
-(deftest day03
-  (is (= sample1
-         '([[0 0] [8 0] [8 5] [3 5] [3 2]] [[0 0] [0 7] [6 7] [6 3] [2 3]])))
-  (is (= (segments (first sample1))
-         '([[0 0] [8 0]] [[8 0] [8 5]] [[8 5] [3 5]] [[3 5] [3 2]])))
-  (is (= (combinations [1 2 3]) [[1 2] [1 3] [2 3]]))
-  (is (= (manhattan (closest-intersection sample1)) 6))
-  (is (= (manhattan (closest-intersection sample2)) 159))
-  (is (= (manhattan (closest-intersection sample3)) 135))
-  (is (= (first-half input) 280))
+(deftest day03-second
   (is (= (intersection-steps sample1) '(30 40)))
   (is (= (second-half sample1) 30))
   (is (= (second-half sample2) 610))
-  (is (= (second-half sample3) 410))
-  (is (= (second-half input) 10554)))
+  (is (= (second-half sample3) 410)))
+
+(second-half input)

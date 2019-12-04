@@ -2,12 +2,13 @@
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is]]))
 
+;;; ----------------------------------------------------------------------
+;;; First half
+;;; ----------------------------------------------------------------------
+
 (defn parse-program
   [input]
-  (->> (str/split (str/trim input) #",")
-       (mapv #(Long/parseLong %))))
-
-(def program (parse-program (slurp "resources/day02.txt")))
+  (->> (str/split (str/trim input) #",") (mapv #(Long/parseLong %))))
 
 (defn run-op
   [ip program]
@@ -29,25 +30,33 @@
       (if (nil? new-ip) result (recur new-ip result)))))
 
 (defn try-program
-  [noun verb]
-  (run-program (-> program
-                   (assoc 1 noun)
-                   (assoc 2 verb))))
+  [program noun verb]
+  (run-program (-> program (assoc 1 noun) (assoc 2 verb))))
 
-(defn first-half [] (try-program 12 2))
-
-(defn second-half
-  []
-  (first (for [noun (range 100)
-               verb (range 100)
-               :when (= 19690720 (try-program noun verb))]
-           (+ (* 100 noun) verb))))
+(defn first-half
+  [program]
+  (try-program program 12 2))
 
 (def sample-program (parse-program "1,9,10,3,2,3,11,0,99,30,40,50"))
 
-(deftest day02
+(deftest day02-first
   (is (= (run-op 0 sample-program)
          [4 (parse-program "1,9,10,70,2,3,11,0,99,30,40,50")]))
-  (is (= (run-program sample-program) 3500))
-  (is (= (first-half) 5305097))
-  (is (= (second-half) 4925)))
+  (is (= (run-program sample-program) 3500)))
+
+(def program (parse-program (slurp "resources/day02.txt")))
+
+(first-half program)
+
+;;; ----------------------------------------------------------------------
+;;; Second half
+;;; ----------------------------------------------------------------------
+
+(defn second-half
+  [program]
+  (first (for [noun (range 100)
+               verb (range 100)
+               :when (= 19690720 (try-program program noun verb))]
+           (+ (* 100 noun) verb))))
+
+(second-half program)
