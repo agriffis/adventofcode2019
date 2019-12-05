@@ -11,6 +11,7 @@
   (->> (mapv #(Long/parseLong %) (str/split (str/trim s) #","))))
 
 (defn mode-param
+  "Interpret param according to mode."
   [program param mode]
   (case mode
     \0 (get program param)
@@ -29,6 +30,8 @@
 
 ;!zprint {:format :next :pair {:justify? true} :vector {:wrap? false}}
 (defn operate
+  "Run one operation, returning the new [ip program input output] where output
+  is optional."
   [program ip input]
   (let [p (subvec program ip)
         ins (str (first p))
@@ -81,6 +84,7 @@
       :halt          [nil program input])))
 
 (defn execute
+  "Execute an entire program, printing output along the way."
   [program input]
   (loop [ip 0
          program (parse program)
@@ -92,6 +96,7 @@
 (def sample-program "1,9,10,3,2,3,11,0,99,30,40,50")
 
 (defmacro with-out-str-result
+  "Call a function capturing stdout for testing, returns [result out-str]."
   [& body]
   `(let [s# (new java.io.StringWriter)]
      (binding [*out* s#]
@@ -99,6 +104,8 @@
          [r# (str s#)]))))
 
 (defn test-op
+  "Run a single operation of a program in test mode, returning {:result result
+  :output output}. This can also accept its own return value for stepping."
   ([program input] (test-op (parse program) input 0))
   ([program input ip]
    (let [[result output] (with-out-str-result (operate program ip input))]
@@ -106,6 +113,8 @@
   ([{[ip program input] :result}] (test-op program input ip)))
 
 (defn test-program
+  "Run a program, storing the last line of output under the key
+  :diagnostic-code."
   [program input]
   (let [[result output] (with-out-str-result (execute program input))
         output (if (= "" output) nil (str/split-lines output))]
