@@ -7,9 +7,9 @@
 
 (defn mode-param
   "Interpret param according to mode."
-  [program param mode]
+  [mem param mode]
   (case mode
-    \0 (get program param)
+    \0 (get mem param)
     \1 param))
 
 (def ops
@@ -25,68 +25,52 @@
 
 ;!zprint {:format :next :pair {:justify? true} :vector {:wrap? false}}
 (defn operate
-  "Run one operation, returning the new [ip program input output] where output
+  "Run one operation, returning the new [ip mem input output] where output
   is optional."
-  [program ip input]
-  (let [p (subvec program ip)
+  [mem ip input]
+  (let [p (subvec mem ip)
         ins (str (first p))
         op-string (subs (str "0" ins) (dec (count ins)))
         [op min-len] (ops op-string)
         len (max min-len (- (count ins) 2))
         modes (concat (drop 2 (reverse ins)) (repeat \0))
-        raw-params (take len (rest p))
-        mode-params (map (partial mode-param program) raw-params modes)]
+        rps (take len (rest p))
+        mps (map (partial mode-param mem) rps modes)]
     '(binding [*out* *err*]
-       (prn {:ip ip
-             :ins ins
-             :op op
-             :raw-params raw-params
-             :mode-params mode-params}))
+       (prn {:ip ip :ins ins :op op :rps rps :mps mps}))
     (case op
       :add           [(+ ip len 1)
-                      (assoc program
-                        (last raw-params) (apply + (drop-last mode-params)))
+                      (assoc mem (last rps) (apply + (drop-last mps)))
                       input]
       :multiply      [(+ ip len 1)
-                      (assoc program
-                        (last raw-params) (apply * (drop-last mode-params)))
+                      (assoc mem (last rps) (apply * (drop-last mps)))
                       input]
       :input         [(+ ip len 1)
-                      (assoc program (first raw-params) (first input))
+                      (assoc mem (first rps) (first input))
                       (rest input)]
-      :output        [(+ ip len 1) program input (first mode-params)]
-      :jump-if-true  [(if (zero? (first mode-params))
-                        (+ ip len 1)
-                        (second mode-params))
-                      program
+      :output        [(+ ip len 1) mem input (first mps)]
+      :jump-if-true  [(if (zero? (first mps)) (+ ip len 1) (second mps))
+                      mem
                       input]
-      :jump-if-false [(if (zero? (first mode-params))
-                        (second mode-params)
-                        (+ ip len 1))
-                      program
+      :jump-if-false [(if (zero? (first mps)) (second mps) (+ ip len 1))
+                      mem
                       input]
       :less-than     [(+ ip len 1)
-                      (assoc program
-                        (last raw-params) (if (apply < (drop-last mode-params))
-                                            1
-                                            0))
+                      (assoc mem (last rps) (if (apply < (drop-last mps)) 1 0))
                       input]
       :equals        [(+ ip len 1)
-                      (assoc program
-                        (last raw-params) (if (apply = (drop-last mode-params))
-                                            1
-                                            0))]
-      :halt          [nil program input])))
+                      (assoc mem (last rps) (if (apply = (drop-last mps)) 1 0))]
+      :halt          [nil mem input])))
 
 (defn execute
   "Execute an entire program, printing output along the way."
   [program input]
   (loop [ip 0
-         program (parse program)
+         mem (parse program)
          input input]
-    (let [[ip program input output] (operate program ip input)]
+    (let [[ip mem input output] (operate mem ip input)]
       (when output (prn output))
-      (if (nil? ip) {:value (first program)} (recur ip program input)))))
+      (if (nil? ip) {:value (first mem)} (recur ip mem input)))))
 
 (def program (slurp "resources/day05.txt"))
 
