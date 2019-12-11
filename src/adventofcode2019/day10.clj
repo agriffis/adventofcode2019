@@ -3,6 +3,10 @@
             [clojure.set :as set]
             [clojure.string :as str]))
 
+;;; ----------------------------------------------------------------------
+;;; Part 1
+;;; ----------------------------------------------------------------------
+
 (defn ->points
   [s]
   (for [[y row] (map-indexed vector (str/split-lines s))
@@ -17,10 +21,6 @@
 (defn clockwise
   [[x y]]
   (vector (- y) x))
-
-(defn counterclockwise
-  [[x y]]
-  (vector y (- x)))
 
 (defn rat
   [[x y]]
@@ -40,10 +40,6 @@
   [[ox oy] [px py]]
   (vector (- px ox) (- py oy)))
 
-(defn unorigin
-  [o p]
-  (origin (map - o) p))
-
 (defn visible-from-point
   [ps p]
   (visible-points (map (partial origin p) ps)))
@@ -59,6 +55,18 @@
 (defn part-one
   []
   (best-location points))
+
+;;; ----------------------------------------------------------------------
+;;; Part 2
+;;; ----------------------------------------------------------------------
+
+(defn counterclockwise
+  [[x y]]
+  (vector y (- x)))
+
+(defn unorigin
+  [o p]
+  (origin (map - o) p))
 
 (defn shoot-quadrant
   [ps p q]
