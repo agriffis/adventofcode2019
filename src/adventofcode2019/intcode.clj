@@ -44,14 +44,13 @@
 (defn step
   "Run one operation, returning the new core."
   [{:keys [mem ip input output base] :as core}]
-  (let [p (map mem (range ip Long/MAX_VALUE))
-        ins (str (first p))
+  (let [ins (str (mem ip))
         op-string (subs (str "0" ins) (dec (count ins)))
         [op min-len] (ops op-string)
         len (max min-len (- (count ins) 2))
         modes (take len (concat (drop 2 (reverse ins)) (repeat \0)))
-        raw-params (take len (rest p))
-        params (map (partial read-mem mem base) raw-params modes)
+        raw-params (mapv mem (range (inc ip) (+ len (inc ip))))
+        params (mapv (partial read-mem mem base) raw-params modes)
         write (partial write-mem mem base (last raw-params) (last modes))]
     (merge core
            {:ip (+ ip len 1)}
@@ -61,7 +60,7 @@
              :input         (if (seq input)
                               {:mem (write (first input)) :input (rest input)}
                               {:ip ip})
-             :output        {:output (concat output [(first params)])}
+             :output        {:output (conj output (first params))}
              :jump-if-true  {:ip (if (zero? (first params))
                                    (+ ip len 1)
                                    (second params))}
@@ -76,7 +75,7 @@
 (defn run
   "Run program until finished or stuck."
   [core]
-  (loop [core (assoc core :output nil)]
+  (loop [core (assoc core :output [])]
     (let [prev-ip (:ip core)
           {:keys [ip] :as core} (step core)]
       (if (or (nil? ip) (= ip prev-ip)) core (recur core)))))
