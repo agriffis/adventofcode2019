@@ -1,6 +1,5 @@
 (ns adventofcode2019.day13
-  (:require [adventofcode2019.intcode :refer [->mem ->core run]]
-            [clojure.pprint :refer [pprint]]))
+  (:require [adventofcode2019.intcode :refer [->mem ->core run]]))
 
 (def program (slurp "resources/day13.txt"))
 
@@ -40,7 +39,7 @@
 
 (defn part-one
   []
-  (->> (play (-> program ->mem ->core))
+  (->> (-> program ->mem ->core play)
        last ; game state
        first ; grid
        (filter block?)
@@ -48,7 +47,7 @@
 
 (defn part-two
   []
-  (->> (play (-> program ->mem (assoc 0 2) ->core))
+  (->> (-> program ->mem (assoc 0 2) ->core play)
        last ; game state
        second ; score
     ))
@@ -65,8 +64,8 @@
         ys (mapv (comp second first) grid)
         top (apply min ys)
         bottom (apply max ys)]
-    (doseq [y (range top (inc bottom))
+    (apply str
+      (for [y (range top (inc bottom))
             x (range left (inc right))]
-      (when (and (= left x) (not= top y)) (println))
-      (print (tiles (get grid [x y] 0))))
-    (println)))
+        (str (when (and (= left x) (not= top y)) "\n")
+             (tiles (get grid [x y] 0)))))))
