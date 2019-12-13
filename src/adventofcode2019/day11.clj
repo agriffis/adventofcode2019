@@ -27,7 +27,7 @@
                core (assoc core :input [input])]
            (cons [robot painted] (paint core robot painted))))))))
 
-(def colors [\  \█ \+])
+(def colors (vec " █+"))
 
 (defn hull
   [painted]
