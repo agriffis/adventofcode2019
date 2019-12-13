@@ -1,5 +1,5 @@
 (ns adventofcode2019.day13
-  (:require [adventofcode2019.intcode :refer [->mem init run]]
+  (:require [adventofcode2019.intcode :refer [->mem ->core run]]
             [clojure.pprint :refer [pprint]]))
 
 (def program (slurp "resources/day13.txt"))
@@ -40,7 +40,7 @@
 
 (defn part-one
   []
-  (->> (play (-> program ->mem init))
+  (->> (play (-> program ->mem ->core))
        last ; game state
        first ; grid
        (filter block?)
@@ -48,7 +48,7 @@
 
 (defn part-two
   []
-  (->> (play (-> program ->mem (assoc 0 2) init))
+  (->> (play (-> program ->mem (assoc 0 2) ->core))
        last ; game state
        second ; score
     ))

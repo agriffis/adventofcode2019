@@ -5,7 +5,7 @@
 
 (defn boot
   [program input]
-  (-> (->mem program) (init input) run))
+  (-> (->mem program) (->core input) run))
 
 (defn diagnostic-code
   [& args]

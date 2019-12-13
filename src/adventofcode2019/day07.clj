@@ -7,7 +7,7 @@
 
 (defn amplify
   [mem phases input]
-  (->> (map #(init mem [%]) phases) (pipe [0]) last :output last))
+  (->> (map #(->core mem [%]) phases) (pipe [0]) last :output last))
 
 (defn part-one
   []
@@ -18,7 +18,7 @@
 
 (defn feedback
   [mem phases input]
-  (->> (loop [cores (map #(init mem [%]) phases)
+  (->> (loop [cores (map #(->core mem [%]) phases)
               input input]
          (let [cores (pipe input cores)]
            (if (nil? (:ip (last cores)))

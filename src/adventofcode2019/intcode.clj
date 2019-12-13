@@ -80,9 +80,9 @@
           {:keys [ip] :as core} (step core)]
       (if (or (nil? ip) (= ip prev-ip)) core (recur core)))))
 
-(defn init
+(defn ->core
   "Initialize core memory and input stream."
-  ([mem] (init mem nil))
+  ([mem] (->core mem nil))
   ([mem input] {:ip 0 :base 0 :input input :mem mem}))
 
 (defn pipe
