@@ -3,24 +3,6 @@
             [ubergraph.core :as uber]
             [ubergraph.alg :as alg]))
 
-(def tiles (vec "█.O "))
-
-(defn draw
-  [{:keys [grid droid] :or {droid []}}]
-  (let [xs (mapv (comp first first) grid)
-        left (apply min 0 xs)
-        right (apply max 0 xs)
-        ys (mapv (comp second first) grid)
-        top (apply min 0 ys)
-        bottom (apply max 0 ys)]
-    (apply str
-      (for [y (range top (inc bottom))
-            x (range left (inc right))
-            :let [tile (cond (= droid [x y]) \D
-                             (and (zero? x) (zero? y)) \X
-                             :else (tiles (get grid [x y] 3)))]]
-        (str (when (and (= left x) (not= top y)) "\n") tile)))))
-
 (def program (slurp "resources/day15.txt"))
 
 (defn wall?
@@ -123,6 +105,8 @@
                 (update here :graph (partial uber/build-graph (:graph there))))
               heres))
 
+(declare draw)
+
 (defn ship
   []
   (let [here (explore {:core (-> program ->mem ->core)
@@ -142,3 +126,21 @@
   []
   (let [{:keys [grid graph]} (ship)]
     (alg/longest-shortest-path graph (coords-of oxygen? grid))))
+
+(def tiles (vec "█.O "))
+
+(defn draw
+  [{:keys [grid droid] :or {droid []}}]
+  (let [xs (mapv (comp first first) grid)
+        left (apply min 0 xs)
+        right (apply max 0 xs)
+        ys (mapv (comp second first) grid)
+        top (apply min 0 ys)
+        bottom (apply max 0 ys)]
+    (apply str
+      (for [y (range top (inc bottom))
+            x (range left (inc right))
+            :let [tile (cond (= droid [x y]) \D
+                             (and (zero? x) (zero? y)) \X
+                             :else (tiles (get grid [x y] 3)))]]
+        (str (when (and (= left x) (not= top y)) "\n") tile)))))
