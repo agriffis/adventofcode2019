@@ -88,6 +88,10 @@
                         custom-merge
                         last))))))
 
+;;; Afterward I realized it would have been much easier to build the adjacency
+;;; matrix purely from the grid data than bothering with custom-move and
+;;; custom-merge to build it on the fly.
+
 (defn custom-move
   "When moving, also add an edge to the adjacency graph."
   [here dir]
