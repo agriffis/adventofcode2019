@@ -90,7 +90,7 @@
 
 (defn paths-to-keys
   "What keys can we reach given a start node and keyring?"
-  [{:keys [g keyring start]}]
+  [g keyring start]
   (let [can-pass? (fn [n]
                     (let [door (uber/attr g n :door)]
                       (or (not door) (keyring door))))
@@ -113,7 +113,7 @@
     (let [b (@best [start keyring])]
       (when (or (nil? b) (> b steps))
         (do (swap! best assoc [start keyring] steps)
-            (let [ps (paths-to-keys state)]
+            (let [ps (paths-to-keys g keyring start)]
               (apply min
                 Long/MAX_VALUE
                 (for [p (sort-by alg/cost-of-path ps)
@@ -163,3 +163,54 @@
         explore (explorer)]
     (uber/pprint g)
     (time (explore state))))
+
+(def example3
+  "#############
+#DcBa.#.GhKl#
+#.###@#@#I###
+#e#d#####j#k#
+###C#@#@###J#
+#fEbA.#.FgHi#
+#############")
+
+(def input2 (slurp "resources/day18b.txt"))
+
+(defn explore2-
+  [best {:keys [g need steps keyring starts] :as state}]
+  (when (<= (count keyring) 5) (println keyring need))
+  (if (zero? need)
+    steps
+    (let [b (@best [starts keyring])]
+      (when (or (nil? b) (> b steps))
+        (do (swap! best assoc [starts keyring] steps)
+            (apply min
+              Long/MAX_VALUE
+              (for [[i start] (map-indexed vector starts)
+                    :let [ps (paths-to-keys g keyring start)]
+                    p (sort-by alg/cost-of-path ps)
+                    :let [add-steps (alg/cost-of-path p)
+                          node (alg/end-of-path p)
+                          key (uber/attr g node :key)
+                          steps (explore2- best
+                                           (assoc state
+                                             :steps (+ steps add-steps)
+                                             :keyring (conj keyring key)
+                                             :need (dec need)
+                                             :starts (assoc starts i node)))]
+                    :when steps]
+                steps)))))))
+
+(defn explorer2
+  []
+  (partial explore2- (atom {})))
+
+(defn part2
+  [input]
+  (let [grid (->grid input)
+        g (-> (->graph grid) trim-non-path-nodes join-hallways)
+        origins (->> (uber/nodes g) (filterv #(uber/attr g % :origin)))
+        need (->> grid vals (filter key?) count)
+        state {:g g :keyring #{} :starts origins :steps 0 :need need}
+        explore2 (explorer2)]
+    (uber/pprint g)
+    (time (explore2 state))))
