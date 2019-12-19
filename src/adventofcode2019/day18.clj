@@ -106,28 +106,29 @@
     (map (partial alg/path-to from-start) reachable-keys)))
 
 (defn explore-
-  [best {:keys [g need steps keyring start] :as state}]
+  [best {:keys [g need steps keyring starts] :as state}]
   (when (<= (count keyring) 5) (println keyring need))
   (if (zero? need)
     steps
-    (let [b (@best [start keyring])]
+    (let [b (@best [starts keyring])]
       (when (or (nil? b) (> b steps))
-        (do (swap! best assoc [start keyring] steps)
-            (let [ps (paths-to-keys g keyring start)]
-              (apply min
-                Long/MAX_VALUE
-                (for [p (sort-by alg/cost-of-path ps)
-                      :let [add-steps (alg/cost-of-path p)
-                            node (alg/end-of-path p)
-                            key (uber/attr g node :key)
-                            steps (explore- best
-                                            (assoc state
-                                              :steps (+ steps add-steps)
-                                              :keyring (conj keyring key)
-                                              :need (dec need)
-                                              :start node))]
-                      :when steps]
-                  steps))))))))
+        (do (swap! best assoc [starts keyring] steps)
+            (apply min
+              Long/MAX_VALUE
+              (for [[i start] (map-indexed vector starts)
+                    :let [ps (paths-to-keys g keyring start)]
+                    p (sort-by alg/cost-of-path ps)
+                    :let [add-steps (alg/cost-of-path p)
+                          node (alg/end-of-path p)
+                          key (uber/attr g node :key)
+                          steps (explore- best
+                                          (assoc state
+                                            :steps (+ steps add-steps)
+                                            :keyring (conj keyring key)
+                                            :need (dec need)
+                                            :starts (assoc starts i node)))]
+                    :when steps]
+                steps)))))))
 
 (defn explorer
   []
@@ -159,7 +160,7 @@
         g (-> (->graph grid) trim-non-path-nodes join-hallways)
         origin (->> (uber/nodes g) (filter #(uber/attr g % :origin)) first)
         need (->> grid vals (filter key?) count)
-        state {:g g :keyring #{} :start origin :steps 0 :need need}
+        state {:g g :keyring #{} :starts [origin] :steps 0 :need need}
         explore (explorer)]
     (uber/pprint g)
     (time (explore state))))
@@ -175,35 +176,6 @@
 
 (def input2 (slurp "resources/day18b.txt"))
 
-(defn explore2-
-  [best {:keys [g need steps keyring starts] :as state}]
-  (when (<= (count keyring) 5) (println keyring need))
-  (if (zero? need)
-    steps
-    (let [b (@best [starts keyring])]
-      (when (or (nil? b) (> b steps))
-        (do (swap! best assoc [starts keyring] steps)
-            (apply min
-              Long/MAX_VALUE
-              (for [[i start] (map-indexed vector starts)
-                    :let [ps (paths-to-keys g keyring start)]
-                    p (sort-by alg/cost-of-path ps)
-                    :let [add-steps (alg/cost-of-path p)
-                          node (alg/end-of-path p)
-                          key (uber/attr g node :key)
-                          steps (explore2- best
-                                           (assoc state
-                                             :steps (+ steps add-steps)
-                                             :keyring (conj keyring key)
-                                             :need (dec need)
-                                             :starts (assoc starts i node)))]
-                    :when steps]
-                steps)))))))
-
-(defn explorer2
-  []
-  (partial explore2- (atom {})))
-
 (defn part2
   [input]
   (let [grid (->grid input)
@@ -211,6 +183,6 @@
         origins (->> (uber/nodes g) (filterv #(uber/attr g % :origin)))
         need (->> grid vals (filter key?) count)
         state {:g g :keyring #{} :starts origins :steps 0 :need need}
-        explore2 (explorer2)]
+        explore (explorer)]
     (uber/pprint g)
-    (time (explore2 state))))
+    (time (explore state))))
