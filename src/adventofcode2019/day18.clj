@@ -63,20 +63,6 @@
         kill-nodes (->> (uber/nodes g) (remove nodes-on-paths))]
     (uber/remove-nodes* g kill-nodes)))
 
-;;; This became obsolete by trim-non-path-nodes above
-(defn prune-dead-ends
-  "Find all the dead ends and burn them backwards."
-  ([g o] (->> (uber/nodes g) (reduce #(prune-dead-ends %1 %2 o) g)))
-  ([g leaf o]
-   (loop [g g
-          l leaf]
-     (cond-let (= l o) g
-               (uber/attr g l :key) g
-               :let [[e1 e2] (uber/out-edges g l)]
-               (nil? e1) g ; already pruned
-               (not-nil? e2) g ; not a dead end
-               :else (recur (uber/remove-nodes g l) (uber/dest e1))))))
-
 (defn bridge-node
   "Replace a hallway node by a spanning edge."
   [g node]
@@ -90,10 +76,10 @@
 
 (defn join-hallways
   "Replace all the hallway nodes by spanning edges."
-  ([g o] (->> (uber/nodes g) (reduce #(join-hallways %1 %2 o) g)))
-  ([g node o]
+  ([g] (->> (uber/nodes g) (reduce join-hallways g)))
+  ([g node]
    (let [[e1 e2 e3] (uber/out-edges g node)]
-     (if (or (= node o) ; origin
+     (if (or (uber/attr g node :origin)
              (uber/attr g node :key)
              (uber/attr g node :door)
              (nil? e2) ; dead end
@@ -170,12 +156,10 @@
 (defn part1
   [input]
   (let [grid (->grid input)
-        g (->graph grid)
+        g (-> (->graph grid) trim-non-path-nodes join-hallways)
         origin (->> (uber/nodes g) (filter #(uber/attr g % :origin)) first)
-        g (trim-non-path-nodes g)
-        g (join-hallways g origin)
         need (->> grid vals (filter key?) count)
         state {:g g :keyring #{} :start origin :steps 0 :need need}
         explore (explorer)]
     (uber/pprint g)
-    (explore state)))
+    (time (explore state))))
