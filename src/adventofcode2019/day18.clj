@@ -1,8 +1,5 @@
 (ns adventofcode2019.day18
   (:require [adventofcode2019.contrib :refer [cond-let]]
-            [clojure.core.cache :as cache]
-            [clojure.math.numeric-tower :as math]
-            [clojure.set :as set]
             [clojure.string :as str]
             [ubergraph.core :as uber]
             [ubergraph.alg :as alg]))
