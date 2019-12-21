@@ -10,6 +10,11 @@
        (map vector (range))
        (into (i/int-map))))
 
+(defn ->core
+  "Initialize core memory and input stream."
+  ([mem] (->core mem nil))
+  ([mem input] {:ip 0 :base 0 :input input :mem mem}))
+
 (defn read-mem
   "Read param from memory map according to mode."
   [mem base param mode]
@@ -79,16 +84,3 @@
     (let [prev-ip (:ip core)
           {:keys [ip] :as core} (step core)]
       (if (or (nil? ip) (= ip prev-ip)) core (recur core)))))
-
-(defn ->core
-  "Initialize core memory and input stream."
-  ([mem] (->core mem nil))
-  ([mem input] {:ip 0 :base 0 :input input :mem mem}))
-
-(defn pipe
-  "Run cores in a pipeline."
-  [input cores]
-  (rest (reductions (fn [prev core]
-                      (run (update core :input concat (:output prev))))
-                    {:output input}
-                    cores)))

@@ -5,6 +5,13 @@
 
 (def program (slurp "resources/day07.txt"))
 
+(defn pipe
+  [input cores]
+  (rest (reductions (fn [prev core]
+                      (run (update core :input concat (:output prev))))
+                    {:output input}
+                    cores)))
+
 (defn amplify
   [mem phases input]
   (->> (map #(->core mem [%]) phases) (pipe [0]) last :output last))
