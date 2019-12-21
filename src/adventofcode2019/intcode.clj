@@ -4,17 +4,20 @@
 
 (defn ->mem
   "Parse comma-separated program string into memory map."
-  [s]
-  (->> (str/split (str/trim s) #",")
+  [program]
+  (->> (str/split (str/trim program) #",")
        (map #(Long/parseLong %))
        (map vector (range))
        (into (i/int-map))))
 
 (defn ->core
   "Boot a core, prepare to run."
-  ([mem] (->core mem nil))
-  ([mem input]
-   {:mem (cond-> mem (instance? String mem) ->mem) :input input :ip 0 :base 0}))
+  ([program-or-mem] (->core program-or-mem nil))
+  ([program-or-mem input]
+   {:mem (cond-> program-or-mem (instance? String program-or-mem) ->mem)
+    :input input
+    :ip 0
+    :base 0}))
 
 (defn- read-mem
   "Read param from memory map according to mode."
