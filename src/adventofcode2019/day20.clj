@@ -6,7 +6,7 @@
 
 (def floor? (partial = \.))
 
-(def portal? (set "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+(def portal? (set "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"))
 
 (defn cell?
   [c]
@@ -25,18 +25,28 @@
   [grid pred? [x y]]
   (filter (comp pred? grid) [[(dec x) y] [(inc x) y] [x (dec y)] [x (inc y)]]))
 
-(defn portal-name
+(defn portal-label
   [grid [x y]]
   (assert portal? (grid [x y]))
-  (let [cs (->> (proximal grid portal? [x y]) (concat [[x y]]) (map grid))]
-    (apply str (sort cs))))
+  (let [cs (->> [[x y]]
+                (concat (proximal grid portal? [x y]))
+                ;; labels are read left-to-right and top-to-down
+                (sort-by first)
+                (sort-by second)
+                (map grid))]
+    (assert (= (count cs) 2))
+    (apply str cs)))
 
 (defn grid-nodes
   [grid]
   (for [[xy c] grid
         :when (floor? c)
-        :let [pxy (first (proximal grid portal? xy))]]
-    [xy (cond-> {} pxy (assoc :portal (portal-name grid pxy)))]))
+        :let [pxy (first (proximal grid portal? xy))
+              label (when pxy (portal-label grid pxy))]]
+    [xy
+     (cond-> {}
+       label (assoc :portal (str/upper-case label))
+       label (assoc :inner (not (Character/isUpperCase (first label)))))]))
 
 (defn ->graph
   [grid]
@@ -63,8 +73,8 @@
     (first nodes)))
 
 (defn find-portal
-  [g pn]
-  (find-node g #(= (uber/attr g % :portal) pn)))
+  [g label]
+  (find-node g #(= (uber/attr g % :portal) label)))
 
 (def example1 (slurp "resources/day20x1.txt"))
 
@@ -75,9 +85,27 @@
 (defn part1
   [input]
   (let [g (-> input ->grid ->graph)]
-    ;(uber/pprint g)
-    (->> (uber/nodes g)
-         (filter #(uber/attr g % :portal))
-         (map #(vector % (uber/attrs g %))))
     (-> (alg/shortest-path g (find-portal g "AA") (find-portal g "ZZ"))
+        alg/cost-of-path)))
+
+(defn z-nodes
+  [g [x y z]]
+  (assert z)
+  (for [edge (uber/out-edges g [x y])
+        :let [src (uber/src edge)
+              dest (uber/dest edge)
+              dest-z (cond (or (not (uber/attr g src :portal))
+                               (not (uber/attr g dest :portal)))
+                             z
+                           (uber/attr g src :inner) (inc z)
+                           :else (dec z))]
+        :when (not (neg? dest-z))]
+    {:dest (conj dest dest-z)}))
+
+(defn part2
+  [input]
+  (let [g (-> input ->grid ->graph)]
+    (-> (alg/shortest-path (partial z-nodes g)
+                           (conj (find-portal g "AA") 0)
+                           (conj (find-portal g "ZZ") 0))
         alg/cost-of-path)))
