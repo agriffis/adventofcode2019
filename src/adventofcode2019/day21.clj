@@ -7,10 +7,7 @@
 (defn parse
   [script]
   (mapv int
-    (-> script
-        (str/replace #"\s*-.*" "")
-        (str/replace #"\s{2,}" "\n")
-        str/triml)))
+    (-> script (str/replace #"-.*" "") (str/replace #"\s+\n" "\n") str/triml)))
 
 (defn draw
   [output]
