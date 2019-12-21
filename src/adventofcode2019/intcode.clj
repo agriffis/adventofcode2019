@@ -74,12 +74,8 @@
 
 (defn ->core
   "Boot a core, prepare to run."
-  ([program-or-mem] (->core program-or-mem nil))
-  ([program-or-mem input]
-   {:mem (cond-> program-or-mem (instance? String program-or-mem) ->mem)
-    :input input
-    :ip 0
-    :base 0}))
+  ([program] (->core program nil))
+  ([program input] {:mem (->mem program) :input input :ip 0 :base 0}))
 
 (defn run
   "Run core until finished or stuck."
