@@ -1,0 +1,7 @@
+NOT A T -- false if A is floor
+NOT T T -- true if A is floor
+AND B T -- true if B is also floor
+AND C T -- true if C is also floor
+NOT T J -- only jump if there's a hole
+AND D J -- and we can land
+WALK

@@ -1,0 +1,30 @@
+-- if we jump to D then next is one of:
+--   E to F
+--   E to I
+--   D to H
+-- since there are two possibilities from the
+-- E branch, figure that out first
+NOT D J -- false if we'd consider jumping
+OR F J  -- true if F is an option
+        -- (or if we're not going to jump anyway)
+OR I J  -- true if F or I is an option
+        -- (or if we're not going to jump anyway)
+AND E J -- true if E followed by F or I is an option
+        -- (or if we're not going to jump anyway)
+OR H J  -- or if we could jump directly to H
+        -- (or if we're not going to jump anyway)
+AND D J -- true if we can jump with options
+
+-- this part is from part 1
+-- so we only jump if we need to, since
+-- we can't see far enough ahead
+-- to know if we should jump now or hold
+NOT A T -- false if A is floor
+NOT T T -- true if A is floor
+AND B T -- true if B is also floor
+AND C T -- true if C is also floor
+NOT T T -- true if there's a hole ahead
+
+-- only jump if there's a hole ahead
+AND T J
+RUN
