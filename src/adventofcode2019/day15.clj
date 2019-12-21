@@ -1,5 +1,5 @@
 (ns adventofcode2019.day15
-  (:require [adventofcode2019.intcode :refer [->mem ->core run]]
+  (:require [adventofcode2019.intcode :refer [->core run]]
             [ubergraph.core :as uber]
             [ubergraph.alg :as alg]))
 
@@ -113,7 +113,7 @@
 
 (defn ship
   []
-  (let [here (explore {:core (-> program ->mem ->core)
+  (let [here (explore {:core (->core program)
                        :graph (uber/graph)
                        :grid {[0 0] 1}
                        :droid [0 0]}

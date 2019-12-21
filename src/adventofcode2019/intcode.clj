@@ -11,11 +11,12 @@
        (into (i/int-map))))
 
 (defn ->core
-  "Initialize core memory and input stream."
+  "Boot a core, prepare to run."
   ([mem] (->core mem nil))
-  ([mem input] {:ip 0 :base 0 :input input :mem mem}))
+  ([mem input]
+   {:mem (cond-> mem (instance? String mem) ->mem) :input input :ip 0 :base 0}))
 
-(defn read-mem
+(defn- read-mem
   "Read param from memory map according to mode."
   [mem base param mode]
   (case mode
@@ -23,7 +24,7 @@
     \1 param
     \2 (get mem (+ param base) 0)))
 
-(defn write-mem
+(defn- write-mem
   "Write to memory map according to mode."
   [mem base param mode value]
   (assoc mem
@@ -78,7 +79,7 @@
              :halt          {:ip nil}))))
 
 (defn run
-  "Run program until finished or stuck."
+  "Run core until finished or stuck."
   [core]
   (loop [core (assoc core :output [])]
     (let [prev-ip (:ip core)

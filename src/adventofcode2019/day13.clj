@@ -39,7 +39,7 @@
 
 (defn part-one
   []
-  (->> (-> program ->mem ->core play)
+  (->> (-> program ->core play)
        last ; game state
        first ; grid
        (filter block?)

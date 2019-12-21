@@ -1,11 +1,11 @@
 (ns adventofcode2019.day09-test
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is]]
-            [adventofcode2019.intcode :refer [->mem ->core run]]))
+            [adventofcode2019.intcode :refer [->core run]]))
 
 (defn boot
   [program input]
-  (-> (->mem program) (->core input) run))
+  (-> (->core program input) run))
 
 (def sample1 "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99")
 

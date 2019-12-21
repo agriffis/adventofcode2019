@@ -1,5 +1,5 @@
 (ns adventofcode2019.day11
-  (:require [adventofcode2019.intcode :refer [->mem ->core run]]))
+  (:require [adventofcode2019.intcode :refer [->core run]]))
 
 (def program (slurp "resources/day11.txt"))
 
@@ -16,7 +16,7 @@
 
 (defn paint
   ([program] (paint program {}))
-  ([program painted] (paint (->core (->mem program) []) [0 0 0] painted))
+  ([program painted] (paint (->core program) [0 0 0] painted))
   ([core robot painted]
    (lazy-seq
      (let [{:keys [ip output] :as core} (run core)

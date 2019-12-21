@@ -1,7 +1,7 @@
 (ns adventofcode2019.day19
-  (:require [adventofcode2019.intcode :refer [->mem ->core run]]))
+  (:require [adventofcode2019.intcode :refer [->core run]]))
 
-(def core (-> (slurp "resources/day19.txt") ->mem ->core))
+(def core (->core (slurp "resources/day19.txt")))
 
 (defn part1
   []

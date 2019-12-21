@@ -1,8 +1,8 @@
 (ns adventofcode2019.day21
   (:require [clojure.string :as str]
-            [adventofcode2019.intcode :refer [->mem ->core run]]))
+            [adventofcode2019.intcode :refer [->core run]]))
 
-(def core (-> (slurp "resources/day21.txt") ->mem ->core))
+(def core (->core (slurp "resources/day21.txt")))
 
 (defn parse
   [script]

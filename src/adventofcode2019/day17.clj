@@ -1,10 +1,10 @@
 (ns adventofcode2019.day17
-  (:require [adventofcode2019.intcode :refer [->mem ->core run]]
+  (:require [adventofcode2019.intcode :refer [->core run]]
             [clojure.string :as str]
             [ubergraph.core :as uber]
             [ubergraph.alg :as alg]))
 
-(def program (-> (slurp "resources/day17.txt") ->mem))
+(def program (slurp "resources/day17.txt"))
 
 (defn ->grid
   [s]
