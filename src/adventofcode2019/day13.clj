@@ -1,5 +1,5 @@
 (ns adventofcode2019.day13
-  (:require [adventofcode2019.intcode :refer [->mem ->core run]]))
+  (:require [adventofcode2019.intcode :refer [->core run]]))
 
 (def program (slurp "resources/day13.txt"))
 
@@ -47,7 +47,7 @@
 
 (defn part-two
   []
-  (->> (-> program ->mem (assoc 0 2) ->core play)
+  (->> (-> (->core program) (assoc-in [:mem 0] 2) play)
        last ; game state
        second ; score
     ))

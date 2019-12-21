@@ -2,22 +2,13 @@
   (:require [clojure.string :as str]
             [clojure.data.int-map :as i]))
 
-(defn ->mem
+(defn- ->mem
   "Parse comma-separated program string into memory map."
   [program]
   (->> (str/split (str/trim program) #",")
        (map #(Long/parseLong %))
        (map vector (range))
        (into (i/int-map))))
-
-(defn ->core
-  "Boot a core, prepare to run."
-  ([program-or-mem] (->core program-or-mem nil))
-  ([program-or-mem input]
-   {:mem (cond-> program-or-mem (instance? String program-or-mem) ->mem)
-    :input input
-    :ip 0
-    :base 0}))
 
 (defn- read-mem
   "Read param from memory map according to mode."
@@ -80,6 +71,15 @@
              :equals        {:mem (write (if (apply = (drop-last params)) 1 0))}
              :adjust-base   {:base (+ base (first params))}
              :halt          {:ip nil}))))
+
+(defn ->core
+  "Boot a core, prepare to run."
+  ([program-or-mem] (->core program-or-mem nil))
+  ([program-or-mem input]
+   {:mem (cond-> program-or-mem (instance? String program-or-mem) ->mem)
+    :input input
+    :ip 0
+    :base 0}))
 
 (defn run
   "Run core until finished or stuck."

@@ -13,20 +13,20 @@
                     cores)))
 
 (defn amplify
-  [mem phases input]
-  (->> (map #(->core mem [%]) phases) (pipe [0]) last :output last))
+  [core phases]
+  (->> (map #(assoc core :input [%]) phases) (pipe [0]) last :output last))
 
-(defn part-one
+(defn part1
   []
-  (let [mem (->mem program)]
+  (let [core (->core program)]
     (->> (for [phases (permutations [0 1 2 3 4])]
-           (amplify mem phases [0]))
+           (amplify core phases))
          (apply max))))
 
 (defn feedback
-  [mem phases input]
-  (->> (loop [cores (map #(->core mem [%]) phases)
-              input input]
+  [core phases]
+  (->> (loop [cores (map #(assoc core :input [%]) phases)
+              input [0]]
          (let [cores (pipe input cores)]
            (if (nil? (:ip (last cores)))
              cores
@@ -35,9 +35,9 @@
        :output
        last))
 
-(defn part-two
+(defn part2
   []
-  (let [mem (->mem program)]
+  (let [core (->core program)]
     (->> (for [phases (permutations [5 6 7 8 9])]
-           (feedback mem phases [0]))
+           (feedback core phases))
          (apply max))))
