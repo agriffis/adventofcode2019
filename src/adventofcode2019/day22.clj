@@ -4,31 +4,43 @@
 (def input (slurp "resources/day22.txt"))
 
 (defn stack
-  [deck]
-  (vec (rseq deck)))
-
-(defn deal
-  [n deck]
-  (reduce (fn [d i] (assoc d (-> i (* n) (rem (count d))) (deck i)))
-    deck
-    (range (count deck))))
+  "When dealing a new stack, where does card i end up?"
+  [c i]
+  (- c i 1))
 
 (defn cut
-  [n deck]
-  (let [i (cond-> n (neg? n) (+ (count deck)))]
-    (vec (concat (subvec deck i) (subvec deck 0 i)))))
+  "When cutting n cards, where does card i end up?"
+  [c n i]
+  (-> i (- n) (+ c) (mod c)))
 
-(defn parse
-  [input]
-  (->>
-    (str/split-lines input)
-    (map (fn [s]
-           (condp re-matches s
-             #"^deal with increment (\d+)$" :>>
-               (fn [[_ n]] (partial deal (Long/parseLong n)))
-             #"^cut (-?\d+)$" :>> (fn [[_ n]] (partial cut (Long/parseLong n)))
-             #"^deal into new stack$" stack)))))
+(defn deal
+  "When dealing with iteration n, where does card i end up?"
+  [c n i]
+  (-> (-> i (* n) (mod c))))
+
+(defn shuffler
+  "Make a shuffling function given input (shuffle program) and a number of
+  cards. Calling the shuffling function with a card number returns the next
+  location for that card."
+  [input c]
+  (->> (str/split-lines input)
+       (map (fn [s]
+              (condp re-matches s
+                #"^deal with increment (\d+)$" :>>
+                  (fn [[_ n]] (partial deal c (Long/parseLong n)))
+                #"^cut (-?\d+)$" :>> (fn [[_ n]]
+                                       (partial cut c (Long/parseLong n)))
+                #"^deal into new stack$" (partial stack c))))
+       reverse
+       (apply comp)))
 
 (defn part1
+  "Where does card number 2019 go with one shuffle?"
   []
-  (-> (reduce #(%2 %1) (vec (range 10007)) (parse input)) (.indexOf 2019)))
+  ((shuffler input 10007) 2019))
+
+(defn part2
+  []
+  ;; find the period for position 2020
+  (count (take-while (partial not= 2020)
+                     (rest (iterate (shuffler input 119315717514047) 2020)))))
