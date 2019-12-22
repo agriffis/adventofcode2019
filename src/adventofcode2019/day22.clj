@@ -14,9 +14,9 @@
   (-> i (- n) (+ c) (mod c)))
 
 (defn deal
-  "When dealing with iteration n, where does card i end up?"
+  "When dealing with increment n, where does card i end up?"
   [c n i]
-  (-> (-> i (* n) (mod c))))
+  (-> i (* n) (mod c)))
 
 (defn shuffler
   "Make a shuffling function given input (shuffle program) and a number of
@@ -38,9 +38,3 @@
   "Where does card number 2019 go with one shuffle?"
   []
   ((shuffler input 10007) 2019))
-
-(defn part2
-  []
-  ;; find the period for position 2020
-  (count (take-while (partial not= 2020)
-                     (rest (iterate (shuffler input 119315717514047) 2020)))))
