@@ -79,8 +79,9 @@
 
 (defn run
   "Run core until finished or stuck."
-  [core]
-  (loop [core (assoc core :output [])]
-    (let [prev-ip (:ip core)
-          {:keys [ip] :as core} (step core)]
-      (if (or (nil? ip) (= ip prev-ip)) core (recur core)))))
+  ([core input] (run (update core :input #(concat % input))))
+  ([core]
+   (loop [core (assoc core :output [])]
+     (let [prev-ip (:ip core)
+           {:keys [ip] :as core} (step core)]
+       (if (or (nil? ip) (= ip prev-ip)) core (recur core))))))
