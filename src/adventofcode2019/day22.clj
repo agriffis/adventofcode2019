@@ -1,5 +1,6 @@
 (ns adventofcode2019.day22
-  (:require [clojure.string :as str]))
+  (:require [clojure.math.numeric-tower :refer [expt]]
+            [clojure.string :as str]))
 
 (def input (slurp "resources/day22.txt"))
 
@@ -38,3 +39,52 @@
   "Where does card number 2019 go with one shuffle?"
   []
   ((shuffler input 10007) 2019))
+
+;;; https://github.com/metalim/metalim.adventofcode.2019.python/blob/master/22_cards_shuffle.ipynb
+
+(defn parse-ops
+  [input]
+  (->>
+    (str/split-lines input)
+    (map (fn [s]
+           (condp re-matches s
+             #"^deal with increment (\d+)$" :>>
+               (fn [[_ n]] (vector :deal (Long/parseLong n)))
+             #"^cut (-?\d+)$" :>> (fn [[_ n]] (vector :cut (Long/parseLong n)))
+             #"^deal into new stack$" (vector :stack))))))
+
+(defn pow
+  [b e m]
+  (mod (expt b e) m))
+
+(defn polypow
+  [a b m n]
+  (loop [a a
+         b b
+         m m
+         n n]
+    (cond (zero? m) [1 0]
+          (even? m) (recur (* a (mod a n)) (mod (+ (* a b) b) n) (/ m 2) n)
+          :else (let [[c d] (polypow a b (dec m) n)]
+                  [(mod (* a c) n) (mod (+ (* a d) b) n)]))))
+
+(defn part2
+  "What does position 2020 contain after ridiculous shuffle?"
+  []
+  (let [pos 2020
+        size 119315717514047N
+        iterations 101741582076661
+        [a b] (reduce (fn [[a b] [op n]]
+                        (println a b)
+                        (println op n)
+                        (case op
+                          :stack [(- a) (- size b 1)]
+                          :cut [a (mod (+ b n) size)]
+                          :deal (let [z (long (.modPow (biginteger n)
+                                                       (biginteger (- size 2))
+                                                       (biginteger size)))]
+                                  [(mod (* a z) size) (mod (* b z) size)])))
+                [1 0]
+                (reverse (parse-ops input)))
+        [a b] (polypow a b iterations size)]
+    (mod (+ (* pos a) b) size)))
