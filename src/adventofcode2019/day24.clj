@@ -2,8 +2,6 @@
   (:require [clojure.core.matrix :refer :all]
             [clojure.string :as str]))
 
-(set-current-implementation :vectorz)
-
 (def input (slurp "resources/day24.txt"))
 
 (def cells {\. 0 \# 1})
@@ -82,8 +80,8 @@
 (def zeroes (zero-matrix 5 5))
 
 (defn step2-
-  [higher a lower]
-  (-> (apply frame a (map (partial dget higher) [:up :right :down :left]))
+  [above a below]
+  (-> (apply frame a (map (partial dget above) [:up :right :down :left]))
       step-
       unframe
       (dset :up
@@ -92,36 +90,41 @@
               (mget a 1 1)
               (mget a 0 2)
               (mget a 1 3)
-              (get-row lower 0)))
+              (get-row below 0)))
       (dset :right
             (apply fate
               (dget a :right)
               (mget a 1 3)
               (mget a 2 4)
               (mget a 3 3)
-              (get-column lower 4)))
+              (get-column below 4)))
       (dset :down
             (apply fate
               (dget a :down)
               (mget a 3 1)
               (mget a 4 2)
               (mget a 3 3)
-              (get-row lower 4)))
+              (get-row below 4)))
       (dset :left
             (apply fate
               (dget a :left)
               (mget a 1 1)
               (mget a 2 0)
               (mget a 3 1)
-              (get-column lower 0)))
+              (get-column below 0)))
       (dset :center 0)))
 
 (defn step2
   [aa]
   (cond-> aa
+    ;; If the highest layer has live bugs, stack another layer on top.
     (some pos? (eseq (first aa))) (as-> $ (concat [zeroes] $))
+    ;; If the lowest layer has live bugs, stack another layer underneath.
     (some pos? (eseq (peek aa))) (as-> $ (concat $ [zeroes]))
     true (as-> $ (mapv step2-
+                   ;; Each layer's result depends on itself, plus the layers
+                   ;; above and below. The highest and lowest layers depend on
+                   ;; a temporary layer of zeroes for their calculations.
                    (concat [zeroes] (drop-last $))
                    $
                    (concat (rest $) [zeroes])))))
