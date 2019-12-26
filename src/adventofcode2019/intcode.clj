@@ -85,3 +85,12 @@
      (let [prev-ip (:ip core)
            {:keys [ip] :as core} (step core)]
        (if (or (nil? ip) (= ip prev-ip)) core (recur core))))))
+
+(defn run-ascii
+  "Run core with ASCII input and output."
+  ([core input] (run-ascii (assoc core :input input)))
+  ([{:keys [input] :as core}]
+   (-> core
+       (cond-> input (assoc :input (map int (str input "\n"))))
+       run
+       (update :output #(apply str (map char %))))))

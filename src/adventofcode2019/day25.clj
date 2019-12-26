@@ -3,17 +3,9 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [adventofcode2019.contrib :refer [cond-let]]
-            [adventofcode2019.intcode :refer [->core run]]))
+            [adventofcode2019.intcode :refer [->core run-ascii]]))
 
 (def program (slurp "resources/day25.txt"))
-
-(defn run-ascii
-  ([core input] (run-ascii (assoc core :input input)))
-  ([{:keys [input] :as core}]
-   (-> core
-       (cond-> input (assoc :input (map int (str input "\n"))))
-       run
-       (update :output #(apply str (map char %))))))
 
 (def abbrs
   {"n" "north"
